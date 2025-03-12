@@ -10,7 +10,7 @@ def get_db_connection():
     return conn
 
 # Signup Page
-@app.route('/home')
+@app.route('/')
 def home():
     conn = get_db_connection()
     jobs = conn.execute('SELECT * FROM jobs').fetchall()
@@ -57,7 +57,7 @@ def login():
         if user:
             session['username'] = user['username']
             session['user_role'] = user['role']  # यूज़र का रोल स्टोर करें
-            return redirect('/home')
+            return redirect('/')
         else:
             return "Invalid Credentials"
 
