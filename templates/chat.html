@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Local Job Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
+    <script>
+        function sendMessage() {
+            let message = document.getElementById("messageInput").value;
+            if (message.trim() !== "") {
+                fetch("/send_message", {
+                    method: "POST",
+                    body: JSON.stringify({ message: message, receiver: "{{ receiver }}" }),
+                    headers: { "Content-Type": "application/json" }
+                }).then(() => {
+                    document.getElementById("messageInput").value = "";
+                    loadMessages();
+                });
+            }
+        }
+
+        function loadMessages() {
+            fetch("/get_messages/{{ receiver }}")
+            .then(response => response.json())
+            .then(data => {
+                let chatBox = document.getElementById("chatBox");
+                chatBox.innerHTML = "";
+                data.messages.forEach(msg => {
+                    let messageDiv = document.createElement("div");
+                    messageDiv.className = msg.sender === "{{ user }}" ? "sent" : "received";
+                    messageDiv.innerHTML = `<p><strong>${msg.sender}:</strong> ${msg.message}</p>`;
+                    chatBox.appendChild(messageDiv);
+                });
+            });
+        }
+
+        setInterval(loadMessages, 2000); // Refresh messages every 2 sec
+    </script>
+</head>
+<body>
+
+    <header>
+        <h1>Chat with {{ receiver }}</h1>
+        <a href="/">Home</a>
+    </header>
+
+    <div class="chat-container">
+        <div id="chatBox"></div>
+        <input type="text" id="messageInput" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</body>
+</html>

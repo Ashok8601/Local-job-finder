@@ -1,0 +1,148 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background: #f4f4f4;
+}
+
+/* Header & Navigation */
+header {
+    background: #333;
+    color: white;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+header h1 {
+    margin: 0;
+}
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+    font-size: 16px;
+}
+
+/* Hero Section */
+.hero {
+    background: url('https://source.unsplash.com/1600x900/?work') no-repeat center;
+    background-size: cover;
+    padding: 60px;
+    color: white;
+}
+.hero h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+.hero p {
+    font-size: 18px;
+}
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: orange;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 5px;
+}
+/* Search Bar Container */
+.search-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+/* Form Styling */
+.search-container form {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 5px;
+    border-radius: 25px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 60%;
+    max-width: 500px;
+}
+
+/* Input Field Styling */
+.search-container input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 25px 0 0 25px;
+}
+
+/* Search Button Styling */
+.search-container button {
+    border: none;
+    background: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 0 25px 25px 0;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+}
+
+.search-container button:hover {
+    background: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .search-container form {
+        width: 90%;
+    }
+    
+    .search-container input {
+        padding: 10px;
+    }
+    
+    .search-container button {
+        padding: 10px 15px;
+    }
+}
+
+/* Featured Jobs */
+.featured-jobs {
+    margin: 20px auto;
+    width: 80%;
+}
+.job-list {
+    display: flex;
+    justify-content: space-around;
+}
+.job {
+    background: white;
+    padding: 15px;
+    box-shadow: 0px 0px 10px gray;
+    width: 30%;
+}
+.job h3 {
+    margin: 0;
+}
+.job button {
+    background: green;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Footer */
+footer {
+    background: #333;
+    color: white;
+    padding: 10px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}

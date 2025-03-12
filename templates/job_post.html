@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Job - Local Job Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='post.css') }}">
+</head>
+<body>
+
+    <header>
+        <h1>Local Job Finder</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/job_post">Post a Job</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+
+    <div class="form-container">
+        <h2>Post a New Job</h2>
+        <form action="/job_post" method="POST">
+            <input type="text" name="title" placeholder="Job Title" required>
+            <textarea name="description" placeholder="Job Description" required></textarea>
+            <input type="text" name="location" placeholder="Location" required>
+            <input type="number" name="salary" placeholder="Salary (₹ per day)" required>
+            <select name="category">
+                <option value="Electrician">Electrician</option>
+                <option value="Plumber">Plumber</option>
+                <option value="Carpenter">Carpenter</option>
+                <option value="Painter">Painter</option>
+                <option value="Labour">General Labour</option>
+            </select>
+            <button type="submit">Post Job</button>
+        </form>
+    </div>
+
+</body>
+</html>
