@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Rojgar Setu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 24px;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .contact-form {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: auto;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #222;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #444;
+        }
+        .contact-info {
+            margin-top: 20px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    Contact Us - Rojgar Setu
+</div>
+
+<div class="container">
+    <h2>हमसे संपर्क करें</h2>
+    <p>अगर आपको कोई सहायता चाहिए तो नीचे दिए गए फॉर्म को भरें या हमें सीधे कॉल करें।</p>
+
+    <div class="contact-form">
+        <form action="/send-email" method="post">
+    <input type="text" name="name" placeholder="आपका नाम" required>
+    <input type="email" name="email" placeholder="आपका ईमेल" required>
+    <input type="tel" name="phone" placeholder="आपका मोबाइल नंबर" required>
+    <textarea name="message" placeholder="अपना संदेश लिखें..." rows="4" required></textarea>
+    <button type="submit">भेजें</button>
+</form>
+    </div>
+
+    <div class="contact-info">
+        <p>📧 ईमेल: rojgarsetu7@gmail.com</p>
+        <p>📞 फोन: +91 9305788384</p>
+        <p>🏢 पता: vadodra Gujrat , भारत</p>
+    </div>
+</div>
+
+</body>
+</html>
