@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Local Job Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
+    <script>
+        function searchUsers() {
+            let query = document.getElementById("searchInput").value;
+            fetch(`/chat/search_users?q=${query}`)
+            .then(response => response.json())
+            .then(users => {
+                let searchResults = document.getElementById("searchResults");
+                searchResults.innerHTML = "";
+                users.forEach(user => {
+                    let userDiv = document.createElement("div");
+                    userDiv.className = "search-result";
+                    userDiv.innerHTML = `<a href="/chat/${user}">${user}</a>`;
+                    searchResults.appendChild(userDiv);
+                });
+            });
+        }
+
+        function sendMessage() {
+            let message = document.getElementById("messageInput").value;
+            if (message.trim() !== "") {
+                fetch("/chat/send_message", {
+                    method: "POST",
+                    body: JSON.stringify({ message: message, receiver: "{{ receiver }}" }),
+                    headers: { "Content-Type": "application/json" }
+                }).then(() => {
+                    document.getElementById("messageInput").value = "";
+                    loadMessages();
+                });
+            }
+        }
+
+        function loadMessages() {
+            fetch(`/chat/get_messages/{{ receiver }}`)
+            .then(response => response.json())
+            .then(data => {
+                let chatBox = document.getElementById("chatBox");
+                chatBox.innerHTML = "";
+                data.messages.forEach(msg => {
+                    let messageDiv = document.createElement("div");
+                    messageDiv.className = msg.sender === "{{ user }}" ? "sent" : "received";
+                    messageDiv.innerHTML = `<p><strong>${msg.sender}:</strong> ${msg.message}</p>`;
+                    chatBox.appendChild(messageDiv);
+                });
+            });
+        }
+
+        setInterval(loadMessages, 2000);
+    </script>
+</head>
+<body>
+
+    <header>
+        <h1>Welcome, {{ user }}</h1>
+        <input type="text" id="searchInput" placeholder="Search user..." onkeyup="searchUsers()">
+        <div id="searchResults"></div>
+        <a href="/user_logout">Logout</a>
+    </header>
+
+    {% if receiver %}
+    <h2>Chat with {{ receiver }}</h2>
+    <div class="chat-container">
+        <div id="chatBox"></div>
+        <input type="text" id="messageInput" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    {% endif %}
+
+</body>
+</html>
