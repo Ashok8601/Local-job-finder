@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job Details</title>
+   
+    <link rel="stylesheet" href="{{ url_for('static', filename='job_details.css') }}">
+</head>
+<body>
+    <h1>{{ job['title'] }}</h1>
+    <p><strong>Description:</strong> {{ job['description'] }}</p>
+    <p><strong>Location:</strong> {{ job['location'] }}</p>
+    <p><strong>Salary:</strong> ₹{{ job['salary'] }} per day</p>
+    <p><strong>Category:</strong> {{ job['category'] }}</p>
+    <h2>Employer Details</h2>
+    <p><strong>Name:</strong> {{ job['name'] }}</p>
+    <p><strong>Phone:</strong> {{ job['phone'] }}</p>
+    <p><strong>Email:</strong> {{ job['email'] }}</p>
+    <a href="/"><button>Back to Home</button></a>
+</body>
+</html>

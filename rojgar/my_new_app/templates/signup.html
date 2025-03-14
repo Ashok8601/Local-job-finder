@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - Local Job Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
+</head>
+<body>
+    <div class="signup-container">
+        <h2>Signup</h2>
+        <form action="/signup" method="POST">
+         <input type="text" name="name" placeholder="Enter your name" required>
+          <input type="text" name="number" placeholder="Enter your phone number" required>
+           <input type="email" name="email" placeholder="Enter your email id" required>
+            <input type="text" name="key" placeholder="Enter your secret key" required>
+            <input type="text" name="username" placeholder="Enter Username" required>
+            <input type="password" name="password" placeholder="Enter Password" required>
+            <input type="password" name="confirm_password" placeholder="Re Enter Password" required>
+            <select name="role">
+                <option value="worker">I am a Worker</option>
+                <option value="employer">I am an Employer</option>
+            </select>
+            <button type="submit">Signup</button>
+        </form>
+        <p>Already have an account? <a href="/login">Login Here</a></p>
+    </div>
+</body>
+</html>
