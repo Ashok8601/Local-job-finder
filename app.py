@@ -1,18 +1,30 @@
-from flask import Flask, render_template, request, redirect, session,flash
-from flask_mail import Mail, Message  # ✅ इसे इम्पोर्ट करें
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
+from flask_mail import Mail, Message  
+from datetime import timedelta
+from flask_session import Session
 import sqlite3
-from isvalid import hash_password,verify_password
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Gmail SMTP Server
+from isvalid import hash_password, verify_password
+from werkzeug.security import generate_password_hash  
+
+app = Flask(__name__)  # ✅ सबसे पहले `app` डिफाइन करें
+
+# ✅ सेशन सेटअप (Flask Session)
+app.config['SESSION_PERMANENT'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
+
+app.secret_key = 'your_secret_key'  # ✅ सीक्रेट की सेट करें
+
+# ✅ Flask-Mail सेटअप (ईमेल भेजने के लिए)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'rojgarsetu7@gmail.com'  # अपना ईमेल डालें
-app.config['MAIL_PASSWORD'] = 'rojgarsetu7@gmail.com'  # अपना पासवर्ड डालें
-app.config['MAIL_DEFAULT_SENDER'] = 'rojgarsetu7@gmail.com'  # Sender Email
+app.config['MAIL_USERNAME'] = 'rojgarsetu7@gmail.com'
+app.config['MAIL_PASSWORD'] = 'your_app_password_here'  # ⚠️ यहां Gmail का ऐप पासवर्ड डालें (सीधा ईमेल पासवर्ड नहीं)
+app.config['MAIL_DEFAULT_SENDER'] = 'rojgarsetu7@gmail.com'
 mail = Mail(app)
-
 def get_db_connection():
     conn = sqlite3.connect('majdur.db')
     conn.row_factory = sqlite3.Row
@@ -21,12 +33,14 @@ def get_db_connection():
 # **Home Route (Dashboard)**
 @app.route('/')
 def home():
+    print("🏠 Home Page Session Data:", session)  # Debugging
     if 'username' not in session:
-        return redirect('/login')  # अगर यूजर लॉगिन नहीं है तो लॉगिन पेज पर भेजो
+        return redirect('/login') 
     
     conn = get_db_connection()
     jobs = conn.execute('SELECT * FROM jobs').fetchall()
     conn.close()
+    
     return render_template('home.html', jobs=jobs, username=session['username'])
 
 # **Signup Route (Password Hashing के साथ)**
@@ -68,39 +82,16 @@ def login():
         user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
         conn.close()
 
-        if user:
-            stored_password = user['password']
-            print(f"Stored Password: {stored_password}")  # Debugging
-            print(f"Entered Password: {password}")  # Debugging
-
-            # **Check if stored password is plain text or hashed**
-            if stored_password.startswith("scrypt") or stored_password.startswith("pbkdf2"):  
-                # Hashed password verification
-                if verify_password(stored_password, password):
-                    session['username'] = user['username']
-                    session['user_role'] = user['role']
-                    return redirect('/')
-                else:
-                    return "Invalid Credentials"
-            else:
-                # **If plain text, hash it and update in the database**
-                new_hashed_password = hash_password(stored_password)
-                conn = get_db_connection()
-                conn.execute("UPDATE users SET password = ? WHERE username = ?", (new_hashed_password, username))
-                conn.commit()
-                conn.close()
-                print("🔄 Password hashed and updated in database!")
-
-                # **Now verify the new hashed password**
-                if verify_password(new_hashed_password, password):
-                    session['username'] = user['username']
-                    session['user_role'] = user['role']
-                    return redirect('/')
-                else:
-                    return "Invalid Credentials"
+        if user and verify_password(user['password'], password):
+            session['username'] = user['username']  # ✅ Ensure this key is consistent
+            session['user'] = user['username']  # ✅ Add this for chat compatibility
+            session['user_role'] = user['role']
+            return redirect('/')
+        else:
+            flash("❌ Invalid Credentials", "danger")
+            return redirect('/login')
 
     return render_template('log.html')
-# **Logout Route**
 @app.route('/logout')
 def logout():
     session.clear()
@@ -224,10 +215,6 @@ def send_email():
             flash(f"कुछ गड़बड़ हो गई: {str(e)}", "danger")
 
         return redirect('/contact')
-
-@app.route('/chat')
-def chat():
-	return render_template('chat.html')
 @app.route('/activity')
 def activity():
 	return render_template('activity.html')
@@ -270,5 +257,171 @@ def delete_account():
     except Exception as e:
         print("Error deleting user:", str(e))
         return "Error deleting account!", 500
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        identifier = request.form['identifier']  # Yeh username ya phone number ho sakta hai
+        
+        conn = sqlite3.connect('majdur.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ? OR phone = ?", (identifier, identifier))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if user:
+            session['reset_user'] = user[0]  # User ID ko session me store kar rahe hain
+            return redirect(url_for('reset_password'))  # Reset password page pe bhej rahe hain
+        else:
+            flash('User not found!', 'danger')
+
+    return render_template('forgot_password.html')
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    if 'reset_user' not in session:
+        print("⚠️ reset_user not found in session, redirecting to forgot_password")
+        return redirect(url_for('forgot_password'))
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # ✅ Check if session value is ID instead of username
+        reset_user_id = session['reset_user']
+        print(f"🔍 Checking if ID exists in DB: {reset_user_id}")
+
+        cursor.execute("SELECT username FROM users WHERE id = ?", (reset_user_id,))
+        user = cursor.fetchone()
+
+        if user is None:
+            print(f"❌ ERROR: No user found with ID {reset_user_id}!")
+            return redirect(url_for('forgot_password'))
+
+        username = user[0]  # ✅ Correct username fetched
+        print(f"✅ Found Username: {username}")
+
+    except Exception as e:
+        print(f"❌ Database Error: {e}")
+        return redirect(url_for('forgot_password'))
+
+    finally:
+        conn.close()
+
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        print(f"🔹 New Password Entered: {new_password}")
+
+        hashed_password = generate_password_hash(new_password)
+        print(f"🔹 Hashed Password: {hashed_password}")  # Debugging
+
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # ✅ Update Query with Correct Username
+            cursor.execute(
+                "UPDATE users SET password = ? WHERE username = ?",
+                (hashed_password, username)
+            )
+            conn.commit()
+
+            if cursor.rowcount > 0:
+                print(f"✅ SUCCESS: Password updated for {username} in majdur.db!")
+            else:
+                print("❌ ERROR: Password update failed! No rows affected.")
+
+        except Exception as e:
+            print(f"❌ Database Error: {e}")
+
+        finally:
+            conn.close()
+
+        session.pop('reset_user', None)  # Clear session after reset
+        flash("✅ Password successfully updated!", "success")
+
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html')
+    
+    # chat implementation
+
+# ✅ Chat Home (Avoid conflict with existing 'home' route)
+@app.route('/chat_home')
+def chat_home():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('chat.html', user=session['user'])
+# ✅ Search Users (Unique route)
+@app.route('/chat/search_users', methods=['GET'])
+def chat_search_users():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify([])
+
+    conn = get_db_connection()
+    cursor = conn.execute("SELECT username FROM users WHERE username LIKE ?", ('%' + query + '%',))
+    users = [row['username'] for row in cursor.fetchall()]
+    conn.close()
+    
+    return jsonify(users)
+
+# ✅ Chat with a specific user (Avoids conflict with existing routes)
+@app.route('/chat/<receiver>')
+def chat(receiver):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('chat.html', user=session['user'], receiver=receiver)
+
+# ✅ Send Message
+@app.route('/chat/send_message', methods=['POST'])
+def chat_send_message():
+    if 'user' not in session:
+        return jsonify({"error": "Unauthorized"}), 403  # ✅ Unauthorized users को ब्लॉक करो
+
+    data = request.json
+    sender = session['user']  # ✅ सेशन से यूज़र लो
+    receiver = data.get('receiver')
+    message = data.get('message')
+
+    if not receiver or not message.strip():
+        return jsonify({"error": "Invalid data"}), 400  # ✅ सही डेटा ना हो तो एरर दो
+
+    conn = get_db_connection()
+    conn.execute("INSERT INTO messages (sender, receiver, message) VALUES (?, ?, ?)", (sender, receiver, message))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"success": True})
+
+# ✅ Fetch Messages
+@app.route('/chat/get_messages/<receiver>')
+def chat_get_messages(receiver):
+    if 'user' not in session:
+        return jsonify({"error": "Unauthorized"}), 403  # ✅ अगर सेशन में यूज़र नहीं है तो एरर दो
+
+    sender = session['user']
+    conn = get_db_connection()
+    cursor = conn.execute(
+        "SELECT sender, message FROM messages WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?) ORDER BY id ASC",
+        (sender, receiver, receiver, sender)
+    )
+    messages = [{"sender": row['sender'], "message": row['message']} for row in cursor.fetchall()]
+    conn.close()
+
+    return jsonify({"messages": messages})
+# ✅ Login (Avoid conflict with existing 'login' route)
+'''@app.route('/user_login', methods=['GET', 'POST'])
+def user_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        session['user'] = username  # ⚠️ Use proper authentication in production
+        return redirect(url_for('chat_home'))
+    return render_template('log.html')
+
+# ✅ Logout (Unique route to avoid conflict)
+@app.route('/user_logout')
+def user_logout():
+    session.pop('user', None)
+    return redirect(url_for('user_login'))'''
 if __name__ == '__main__':
     app.run(debug=True)
+	    
