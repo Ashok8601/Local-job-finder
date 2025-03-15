@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='update_profile.css') }}">
+</head>
+<body>
+    <div class="profile-container">
+        <h2>Update Your Profile</h2>
+        <form action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data">
+            
+            <label>Full Name:</label>
+            <input type="text" name="full_name" value="{{ user_profile.get('full_name', '') }}" placeholder="Enter your full name"><br>
+
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ user_profile.get('email', '') }}" placeholder="Enter your email"><br>
+
+            <label>Phone:</label>
+            <input type="text" name="phone" value="{{ user_profile.get('phone', '') }}" placeholder="Enter your phone number"><br>
+
+            <label>Date of Birth:</label>
+            <input type="date" name="date_of_birth" value="{{ user_profile.get('date_of_birth', '') }}"><br>
+
+            <label>Gender:</label>
+            <input type="radio" name="gender" value="Male" {% if user_profile.get('gender') == 'Male' %} checked {% endif %}> Male
+            <input type="radio" name="gender" value="Female" {% if user_profile.get('gender') == 'Female' %} checked {% endif %}> Female
+            <input type="radio" name="gender" value="Other" {% if user_profile.get('gender') == 'Other' %} checked {% endif %}> Other
+            <br>
+
+            <label>Address:</label>
+            <input type="text" name="address" value="{{ user_profile.get('address', '') }}" placeholder="Enter your address"><br>
+
+            <label>City:</label>
+            <input type="text" name="city" value="{{ user_profile.get('city', '') }}" placeholder="Enter your city"><br>
+
+            <label>State:</label>
+            <input type="text" name="state" value="{{ user_profile.get('state', '') }}" placeholder="Enter your state"><br>
+
+            <label>Country:</label>
+            <input type="text" name="country" value="{{ user_profile.get('country', '') }}" placeholder="Enter your country"><br>
+
+            <label>Bio:</label>
+            <textarea name="bio" placeholder="Write something about yourself">{{ user_profile.get('bio', '') }}</textarea><br>
+
+            <label>Skills (comma separated):</label>
+            <textarea name="skills" placeholder="E.g., Python, JavaScript, Django">{{ user_profile.get('skills', '') }}</textarea><br>
+
+            <label>Work Experience:</label>
+            <textarea name="work_experience" placeholder="Describe your work experience">{{ user_profile.get('work_experience', '') }}</textarea><br>
+
+            <label>Education:</label>
+            <input type="text" name="education" value="{{ user_profile.get('education', '') }}" placeholder="Enter your highest education details"><br>
+
+            <label>Job Status:</label>
+            <input type="text" name="job_status" value="{{ user_profile.get('job_status', '') }}" placeholder="E.g., Employed, Freelancer"><br>
+
+            <label>Company:</label>
+            <input type="text" name="company" value="{{ user_profile.get('company', '') }}" placeholder="Your company name"><br>
+
+            <label>Designation:</label>
+            <input type="text" name="designation" value="{{ user_profile.get('designation', '') }}" placeholder="Your job designation"><br>
+
+            <label>LinkedIn:</label>
+            <input type="url" name="linkedin" value="{{ user_profile.get('linkedin', '') }}" placeholder="Enter your LinkedIn profile URL"><br>
+
+            <label>GitHub:</label>
+            <input type="url" name="github" value="{{ user_profile.get('github', '') }}" placeholder="Enter your GitHub profile URL"><br>
+
+            <label>Portfolio:</label>
+            <input type="url" name="portfolio" value="{{ user_profile.get('portfolio', '') }}" placeholder="Your portfolio website URL"><br>
+
+            <label>Profile Photo:</label>
+            <input type="file" name="profile_photo" onchange="previewImage(event, 'profilePreview')"><br>
+            {% if user_profile.get('profile_photo') %}
+                <img src="{{ url_for('static', filename=user_profile.get('profile_photo')) }}" id="profilePreview" width="100">
+            {% else %}
+                <img id="profilePreview" width="100" style="display: none;">
+            {% endif %}
+            <br>
+
+            <label>Resume (PDF only):</label>
+            <input type="file" name="resume" accept=".pdf"><br>
+            {% if user_profile.get('resume') %}
+                <a href="{{ url_for('static', filename=user_profile.get('resume')) }}" target="_blank">View Resume</a>
+            {% endif %}
+            <br>
+
+            <label>ID Proof:</label>
+            <input type="file" name="id_proof"><br>
+            {% if user_profile.get('id_proof') %}
+                <a href="{{ url_for('static', filename=user_profile.get('id_proof')) }}" target="_blank">View ID Proof</a>
+            {% endif %}
+            <br>
+
+            <label>Languages Known:</label>
+            <input type="text" name="language" value="{{ user_profile.get('language', '') }}" placeholder="E.g., English, Hindi"><br>
+
+            <label>Notification Preferences:</label>
+            <input type="text" name="notification_preferences" value="{{ user_profile.get('notification_preferences', '') }}"><br>
+
+            <button type="submit">Update Profile</button>
+        </form>
+        <br>
+        <a href="{{ url_for('account') }}">Cancel</a>
+    </div>
+
+    <script>
+        function previewImage(event, previewId) {
+            var reader = new FileReader();
+            reader.onload = function(){
+                var output = document.getElementById(previewId);
+                output.src = reader.result;
+                output.style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+</body>
+                  </html>
