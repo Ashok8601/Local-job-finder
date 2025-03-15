@@ -22,7 +22,7 @@ def get_db_connection():
     return conn
 @app.route('/')
 def home():
-    print("🏠 Home Page Session Data:", session)  # Debugging
+    print(" Home Page Session Data:", session)  # Debugging
     if 'username' not in session:
         return redirect('/login') 
     
@@ -148,13 +148,13 @@ def user_profile(username):
 
     return render_template('user_profile.html', user=user)
 @app.route('/edit_job/<int:job_id>', methods=['GET', 'POST'])
-def edit_job(job_id):  # 🔹 यहाँ job_id URL से आ रहा है
+def edit_job(job_id):  
     if 'username' not in session:
         return redirect(url_for('login'))  
 
     conn = get_db_connection()
 
-    # ✅ अगर POST Request है → अपडेट करें
+ 
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
@@ -193,19 +193,19 @@ def delete_job(job_id):
 @app.route('/account')
 def account():
     if 'username' not in session:
-        return redirect(url_for('login'))  # अगर यूज़र लॉगिन नहीं है तो लॉगिन पेज पर भेजो  
+        return redirect(url_for('login')) 
 
     username = session['username']  
 
     conn = get_db_connection()
 
-    # यूज़र की बेसिक जानकारी `users` टेबल से लाना  
+   
     user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
 
-    # यूज़र की प्रोफाइल डिटेल्स `user_profile` टेबल से लाना  
+    
     profile_data = conn.execute("SELECT * FROM user_profile WHERE user_id = ?", (user['id'],)).fetchone()
 
-    # यूज़र द्वारा पोस्ट की गई जॉब्स लाना  
+   
     jobs = conn.execute("SELECT * FROM jobs WHERE employer=?", (username,)).fetchall()
 
     conn.close()
@@ -213,7 +213,7 @@ def account():
     if not user:
         return render_template('404.html'), 404  
 
-    # प्रोफाइल डिटेल्स को एक डिक्शनरी में बदलना  
+    
     user_profile = {}
     if profile_data:
         columns = [col[0] for col in conn.execute("PRAGMA table_info(user_profile)").fetchall()]
@@ -316,7 +316,7 @@ def forgot_password():
 @app.route('/reset-password', methods=['GET', 'POST'])
 def reset_password():
     if 'reset_user' not in session:
-        print("⚠️ reset_user not found in session, redirecting to forgot_password")
+        print("reset_user not found in session, redirecting to forgot_password")
         return redirect(url_for('forgot_password'))
 
     try:
@@ -450,13 +450,13 @@ def update_profile():
     username = session['username']
     conn = get_db_connection()
 
-    # `users` टेबल से यूज़र की मौजूदा जानकारी प्राप्त करें
+    
     user_data = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
 
-    # `user_profile` टेबल से डेटा प्राप्त करें
+    
     user_profile = conn.execute("SELECT * FROM user_profile WHERE username = ?", (username,)).fetchone()
 
-    # अगर `user_profile` टेबल में डेटा नहीं है, तो `users` टेबल का डेटा यूज़ करें
+    
     if not user_profile:
         user_profile = {
             'full_name': user_data['name'] if user_data else '',
@@ -520,7 +520,7 @@ def update_profile():
                 id_proof = f"uploads/{id_proof_file.filename}"
                 id_proof_file.save(os.path.join('static/uploads', id_proof_file.filename))
 
-        # अगर पहले से डेटा मौजूद है, तो अपडेट करें
+       
         if conn.execute("SELECT * FROM user_profile WHERE username = ?", (username,)).fetchone():
             conn.execute("""UPDATE user_profile SET 
                 full_name=?, email=?, phone=?, bio=?, skills=?, work_experience=?, education=?, job_status=?, company=?, designation=?, 
@@ -529,7 +529,7 @@ def update_profile():
                 (full_name, email, phone, bio, skills, work_experience, education, job_status, company, designation, 
                  linkedin, github, portfolio, profile_photo, resume, id_proof, language, notification_preferences, username))
         else:
-            # अगर डेटा मौजूद नहीं है, तो नया डेटा इंसर्ट करें
+           
             conn.execute("""INSERT INTO user_profile 
                 (username, full_name, email, phone, bio, skills, work_experience, education, job_status, company, designation, 
                 linkedin, github, portfolio, profile_photo, resume, id_proof, language, notification_preferences) 
