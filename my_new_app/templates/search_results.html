@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='search.css') }}">
+</head>
+<body>
+    <h1>Search Results for "{{ query }}"</h1>
+
+    <!-- Jobs Results -->
+    <section class="featured-jobs">
+        <h2>Job Listings</h2>
+        <div class="job-list">
+            {% if jobs %}
+                {% for job in jobs %}
+                <div class="job">
+                    <h3>{{ job['title'] }}</h3>
+                    <p>Location: {{ job['location'] }} | ₹{{ job['salary'] }} per day</p>
+                    <a href="{{ url_for('job_details', job_id=job['id']) }}">
+                        <button>See Details</button>
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No jobs found!</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Users Results -->
+    <section class="featured-users">
+        <h2>User Profiles</h2>
+        <div class="user-list">
+            {% if users %}
+                {% for user in users %}
+                <div class="user">
+                    <h3>{{ user['name'] }}</h3>
+                    <p>Username: {{ user['username'] }} | Phone: {{ user['phone'] }}</p>
+                    <a href="{{ url_for('user_profile', username=user['username']) }}">
+                        <button>View Profile</button>
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No users found!</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <a href="/"><button>Back to Home</button></a>
+</body>
+</html>

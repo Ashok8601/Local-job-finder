@@ -1,0 +1,259 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background: #f4f4f4;
+}
+
+/* Header & Navigation */
+header {
+    background: blue;
+    color: white;
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 8px;
+}
+header h2 {
+    margin: 0;
+}
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 2px;
+    font-size: 14px;
+   
+}
+
+/* Hero Section */
+.typing-animation {
+    display: inline-block;
+    font-size: 24px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 3px solid #007bff; /* Cursor effect */
+    width: 0;
+    animation: typing 10s steps(100, end) infinite, blink 0.4s step-end infinite;
+}
+
+@keyframes typing {
+    0% { width: 0; }
+    50% { width: 100%; }
+    100% { width: 0; }
+}
+
+@keyframes blink {
+    50% { border-color: transparent; }
+}
+.hero {
+    background: url('https://source.unsplash.com/1600x900/?work') no-repeat center;
+    background-size: cover;
+    padding: 60px;
+    color: magenta;
+}
+.hero h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+.hero p {
+    font-size: 18px;
+}
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: orange;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 5px;
+}
+/* Search Bar Container */
+.search-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+/* Form Styling */
+.search-container form {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 5px;
+    border-radius: 25px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 60%;
+    max-width: 500px;
+}
+
+/* Search Container Styling */
+.search-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px; /* Increase max width */
+    margin: 20px auto;
+}
+
+/* Input Field Styling */
+.search-container input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 15px; /* Increase padding for height */
+    font-size: 18px; /* Increase font size */
+    border-radius: 30px 0 0 30px;
+    width: 100%; /* Ensure it takes full space */
+}
+
+/* Search Bar Styling */
+form {
+    display: flex;
+    justify-content: center;
+    max-width: 500px;
+    margin: 20px auto;
+}
+
+form input {
+    flex: 1;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 2px solid #007bff;
+    border-radius: 25px 0 0 25px;
+    outline: none;
+    width: 100%;
+}
+
+form button {
+    background: #007bff;
+    color: white;
+    border: 2px solid #007bff;
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 0 25px 25px 0;
+    transition: background 0.3s ease;
+}
+
+form button:hover {
+    background: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    form {
+        width: 90%;
+    }
+    
+    form input {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    form button {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}
+/* Featured Jobs 
+.featured-jobs {
+    margin: 20px auto;
+    width: 80%;
+}
+
+ Job List 
+.job-list {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: space-between;
+}
+*/
+/* Individual Job Card */
+/* Featured Jobs */
+.featured-jobs {
+    margin: 20px auto;
+    width: 80%;
+    text-align: center;
+}
+
+/* Job List */
+.job-list {
+    display: flex;
+    flex-wrap: wrap; /* Jobs को next row में जाने दें */
+    justify-content: center; /* Jobs center में रहें */
+    gap: 20px; /* Jobs के बीच gap */
+}
+.job {
+    background: white;
+    padding: 15px;
+    box-shadow: 0px 0px 10px gray;
+    width: 48%; /* Two jobs per row */
+    margin-bottom: 20px; /* Space between rows */
+}
+
+/* Job Title */
+.job h3 {
+    margin: 0;
+}
+
+/* Job Button */
+.job button {
+    background: green;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+/* Footer Styling */
+/* Footer Styling */
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #222;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Footer Links */
+.footer-links {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: nowrap; /* अब links एक ही row में रहेंगे */
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    padding: 8px 12px;
+    background: #444;
+    border-radius: 5px;
+    transition: 0.3s;
+    white-space: nowrap; /* Text wrap ना हो */
+}
+
+.footer-links a:hover {
+    background: #FFD700;
+    color: black;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    footer {
+        padding: 15px 0;
+    }
+    .footer-links {
+        gap: 10px;
+        flex-wrap: nowrap; /* Mobile पर भी inline-flex रहेगा */
+    }
+}

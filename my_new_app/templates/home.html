@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Job Finder - Find Work Easily</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header>
+        <h2>Rojgar Setu</h2>
+        <nav>
+            <a href="/about">About </a>
+            <a href="/login">Login</a>
+            <a href="/contact">contact </a>
+            <a href="/job_post">Post job</a>
+        </nav>
+    </header>
+    <br>
+     <form action="{{ url_for('search') }}" method="get">
+    <input type="text" name="q" placeholder="Search for jobs or users..." required>
+    <button type="submit">Search</button>
+</form>
+    <!-- Hero Section -->
+    <section class="hero">
+    <h2 class="typing-animation">
+        <span>Find Work or Hire !</span>
+    </h2>
+    <p>Connecting laborers and job providers across India.</p>
+    <a href="/signup" class="btn">Get Started</a>
+</section>
+
+    <!-- Search Bar -->
+  
+    <!-- Featured Jobs Section -->
+    <section class="featured-jobs">
+    <h2>Featured Jobs</h2>
+    <div class="job-list">
+        {% for job in jobs %}
+        <div class="job">
+            <h3>{{ job['title'] }}</h3>
+            <p>Location: {{ job['location'] }} | ₹{{ job['salary'] }} per day</p>
+            <a href="{{ url_for('job_details', job_id=job['id']) }}">
+                <button>See Details</button>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<footer>
+    <div class="footer-links">
+        <a href="/account">Account</a>
+        <a href="/chat_home">Chat</a>
+        <a href="/activity">Activity</a>
+        <a href="/instagram">Watch</a>
+    </div>
+</footer>
+</body>
+</html>
