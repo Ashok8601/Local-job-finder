@@ -8,33 +8,41 @@
 </head>
 <body>
 
-    <div class="profile-container">
-        <div class="profile-header">
-            <img src="{{ url_for('static', filename=user_profile.get('profile_photo', 'images/default.jpg')) }}" alt="Profile Photo" class="profile-photo">
-            <h1>{{ user_profile.get('full_name', 'User') }}</h1>
-            <p class="bio">{{ user_profile.get('bio', 'No bio available') }}</p>
-        </div>
+{% if user_profile %}
+        <h2>Welcome, {{ user_profile.username }}</h2>
 
-        <div class="profile-details">
-            <p><strong>Email:</strong> {{ user_profile.get('email', 'Not provided') }}</p>
-            <p><strong>Phone:</strong> {{ user_profile.get('phone', 'Not provided') }}</p>
-            <p><strong>Date of Birth:</strong> {{ user_profile.get('date_of_birth', 'Not provided') }}</p>
-            <p><strong>Gender:</strong> {{ user_profile.get('gender', 'Not provided') }}</p>
-            <p><strong>Location:</strong> {{ user_profile.get('city', 'Unknown') }}, {{ user_profile.get('state', '') }}, {{ user_profile.get('country', 'Unknown') }}</p>
-            <p><strong>Skills:</strong> {{ user_profile.get('skills', 'Not provided') }}</p>
-            <p><strong>Work Experience:</strong> {{ user_profile.get('work_experience', 'Not provided') }}</p>
-            <p><strong>Education:</strong> {{ user_profile.get('education', 'Not provided') }}</p>
-            <p><strong>Job Status:</strong> {{ user_profile.get('job_status', 'Not provided') }}</p>
-            <p><strong>Company:</strong> {{ user_profile.get('company', 'Not provided') }}</p>
-            <p><strong>Designation:</strong> {{ user_profile.get('designation', 'Not provided') }}</p>
-        </div>
+        {% if user_profile.profile_photo %}
+            <img src="{{ url_for('static', filename=user_profile.profile_photo) }}" 
+                 alt="Profile Photo" 
+                 width="150" height="150" style="border-radius: 50%;">
+        {% else %}
+            <p>No profile photo available.</p>
+        {% endif %}
 
-        <div class="profile-links">
-            <a href="{{ user_profile.get('linkedin', '#') }}" target="_blank" class="btn linkedin">LinkedIn</a>
-            <a href="{{ user_profile.get('github', '#') }}" target="_blank" class="btn github">GitHub</a>
-            <a href="{{ user_profile.get('portfolio', '#') }}" target="_blank" class="btn portfolio">Portfolio</a>
-        </div>
+        <p><strong>Name:</strong> {{ user_profile.name }}</p>
+        <p><strong>Email:</strong> {{ user_profile.email }}</p>
+        <p><strong>Phone:</strong> {{ user_profile.phone }}</p>
+    {% else %}
+        <p>User profile not found.</p>
+    {% endif %}
+     <!--  <div class="profile-container">
+    <div class="profile-header">
+        <img src="{{ url_for('static', filename='uploads/' + user_profile['profile_photo']) if user_profile['profile_photo'] else url_for('static', filename='uploads/default.jpg') }}" alt="Profile Photo" class="profile-photo">
+        <h1>{{ user_profile.get('full_name', 'User') }}</h1>
+        <p class="bio">{{ user_profile.get('bio', 'No bio available') }}</p>
+    </div>
 
+    <div class="profile-details">
+        <p><strong>Email:</strong> {{ user_profile.get('email', 'Not provided') }}</p>
+        <p><strong>Phone:</strong> {{ user_profile.get('phone', 'Not provided') }}</p>
+        <p><strong>Date of Birth:</strong> {{ user_profile.get('date_of_birth', 'Not provided') }}</p>
+        <p><strong>Gender:</strong> {{ user_profile.get('gender', 'Not provided') }}</p>
+        <p><strong>Location:</strong> {{ user_profile.get('city', 'Unknown') }}, {{ user_profile.get('state', '') }}, {{ user_profile.get('country', 'Unknown') }}</p>
+        <p><strong>Skills:</strong> {{ user_profile.get('skills', 'Not provided') }}</p>
+        <p><strong>Work Experience:</strong> {{ user_profile.get('work_experience', 'Not provided') }}</p>
+        <p><strong>Education:</strong> {{ user_profile.get('education', 'Not provided') }}</p>-->
+    </div>
+</div>
         <div class="profile-actions">
             <a href="/" class="btn home-btn">Back to Home</a>
             <a href="/update_profile" class="btn update-btn">Update Profile</a>

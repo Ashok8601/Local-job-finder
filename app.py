@@ -20,6 +20,45 @@ def get_db_connection():
     conn = sqlite3.connect('majdur.db')
     conn.row_factory = sqlite3.Row
     return conn
+@app.route('/searches')
+def searches():
+    query = request.args.get('q', '')
+    conn = get_db_connection()
+
+    jobs = conn.execute(
+        "SELECT id, title, salary, category FROM jobs WHERE title LIKE ?",
+        ('%' + query + '%',)
+    ).fetchall()
+
+    users = conn.execute(
+        "SELECT username, profile_photo FROM user_profile WHERE username LIKE ?",
+        ('%' + query + '%',)
+    ).fetchall()
+
+    conn.close()
+
+    job_results = [
+        {
+            'type': 'job',
+            'id': job['id'],
+            'title': job['title'],
+            'salary': job['salary'],
+            'category': job['category']
+        }
+        for job in jobs
+    ]
+
+    user_results = [
+    {
+        'type': 'user',
+        'username': user['username'],
+        'profile_photo': url_for('static', filename=f'uploads/{user["profile_photo"]}')
+    }
+    
+        for user in users
+    ]
+
+    return jsonify({'results': job_results + user_results})
 @app.route('/')
 def home():
     print(" Home Page Session Data:", session)  # Debugging
@@ -193,33 +232,26 @@ def delete_job(job_id):
 @app.route('/account')
 def account():
     if 'username' not in session:
-        return redirect(url_for('login')) 
+        return redirect(url_for('login'))
 
-    username = session['username']  
-
+    username = session['username']
     conn = get_db_connection()
 
-   
     user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-
-    
-    profile_data = conn.execute("SELECT * FROM user_profile WHERE user_id = ?", (user['id'],)).fetchone()
-
-   
+    profile_data = conn.execute("SELECT * FROM user_profile WHERE username = ?", (username,)).fetchone()
     jobs = conn.execute("SELECT * FROM jobs WHERE employer=?", (username,)).fetchall()
+
+    user_profile = {}
+    if profile_data:
+        columns = [col[1] for col in conn.execute("PRAGMA table_info(user_profile)").fetchall()]  # col[1] is column name
+        user_profile = dict(zip(columns, profile_data))
 
     conn.close()
 
     if not user:
-        return render_template('404.html'), 404  
+        return render_template('404.html'), 404
 
-    
-    user_profile = {}
-    if profile_data:
-        columns = [col[0] for col in conn.execute("PRAGMA table_info(user_profile)").fetchall()]
-        user_profile = dict(zip(columns, profile_data))
-
-    return render_template('account.html', user=user, user_profile=user_profile, jobs=jobs)
+    return render_template('account.html', user=user, user_profile=dict(user_profile), jobs=jobs)
 @app.route('/about')
 def about():
 	return render_template('about_us.html')
@@ -385,7 +417,14 @@ def reset_password():
 def chat_home():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('chat.html', user=session['user'])
+    username =session['user']
+    conn =get_db_connection()
+    user_profile=conn.execute("SELECT * FROM user_profile WHERE username =?",(username,)
+    ).fetchone()
+    conn.close()
+
+    return render_template('chat.html', user=session['user'],user_profile=user_profile)
+
 
 @app.route('/chat/search_users', methods=['GET'])
 def chat_search_users():
@@ -394,10 +433,26 @@ def chat_search_users():
         return jsonify([])
 
     conn = get_db_connection()
-    cursor = conn.execute("SELECT username FROM users WHERE username LIKE ?", ('%' + query + '%',))
-    users = [row['username'] for row in cursor.fetchall()]
+    conn.row_factory = sqlite3.Row
+    cursor = conn.execute("""
+        SELECT username, profile_photo, full_name 
+        FROM user_profile 
+        WHERE username LIKE ?
+    """, ('%' + query + '%',))
+
+    users = []
+    for row in cursor.fetchall():
+        photo_path = row["profile_photo"]
+        if not photo_path or photo_path.strip() == "":
+            photo_path = "uploads/default.png"  # fallback default
+
+        users.append({
+            "username": row["username"],
+            "photo": photo_path,
+            "full_name": row["full_name"] or "Unnamed User"
+        })
     conn.close()
-    
+
     return jsonify(users)
 
 
@@ -450,14 +505,14 @@ def update_profile():
     username = session['username']
     conn = get_db_connection()
 
-    
     user_data = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+    user_profile_row = conn.execute("SELECT * FROM user_profile WHERE username = ?", (username,)).fetchone()
 
-    
-    user_profile = conn.execute("SELECT * FROM user_profile WHERE username = ?", (username,)).fetchone()
-
-    
-    if not user_profile:
+    if user_profile_row:
+        # Convert sqlite3.Row to dictionary
+        columns = [col[1] for col in conn.execute("PRAGMA table_info(user_profile)").fetchall()]
+        user_profile = dict(zip(columns, user_profile_row))
+    else:
         user_profile = {
             'full_name': user_data['name'] if user_data else '',
             'email': user_data['email'] if user_data else '',
@@ -480,48 +535,52 @@ def update_profile():
         }
 
     if request.method == 'POST':
-        full_name = request.form.get('full_name', user_profile['full_name'])
-        email = request.form.get('email', user_profile['email'])
-        phone = request.form.get('phone', user_profile['phone'])
-        bio = request.form.get('bio', user_profile['bio'])
-        skills = request.form.get('skills', user_profile['skills'])
-        work_experience = request.form.get('work_experience', user_profile['work_experience'])
-        education = request.form.get('education', user_profile['education'])
-        job_status = request.form.get('job_status', user_profile['job_status'])
-        company = request.form.get('company', user_profile['company'])
-        designation = request.form.get('designation', user_profile['designation'])
-        linkedin = request.form.get('linkedin', user_profile['linkedin'])
-        github = request.form.get('github', user_profile['github'])
-        portfolio = request.form.get('portfolio', user_profile['portfolio'])
-        language = request.form.get('language', user_profile['language'])
-        notification_preferences = request.form.get('notification_preferences', user_profile['notification_preferences'])
+        form = request.form
+        full_name = form.get('full_name', user_profile['full_name'])
+        email = form.get('email', user_profile['email'])
+        phone = form.get('phone', user_profile['phone'])
+        bio = form.get('bio', user_profile['bio'])
+        skills = form.get('skills', user_profile['skills'])
+        work_experience = form.get('work_experience', user_profile['work_experience'])
+        education = form.get('education', user_profile['education'])
+        job_status = form.get('job_status', user_profile['job_status'])
+        company = form.get('company', user_profile['company'])
+        designation = form.get('designation', user_profile['designation'])
+        linkedin = form.get('linkedin', user_profile['linkedin'])
+        github = form.get('github', user_profile['github'])
+        portfolio = form.get('portfolio', user_profile['portfolio'])
+        language = form.get('language', user_profile['language'])
+        notification_preferences = form.get('notification_preferences', user_profile['notification_preferences'])
 
         # Profile Photo Upload
-        profile_photo = user_profile['profile_photo']
+        profile_photo = user_profile.get('profile_photo', '')
         if 'profile_photo' in request.files:
             photo_file = request.files['profile_photo']
             if photo_file.filename:
                 profile_photo = f"uploads/{photo_file.filename}"
-                photo_file.save(os.path.join('static/uploads', photo_file.filename))
+                photo_path = os.path.join('static/uploads', photo_file.filename)
+                photo_file.save(photo_path)
 
         # Resume Upload
-        resume = user_profile['resume']
+        resume = user_profile.get('resume', '')
         if 'resume' in request.files:
             resume_file = request.files['resume']
             if resume_file.filename:
                 resume = f"uploads/{resume_file.filename}"
-                resume_file.save(os.path.join('static/uploads', resume_file.filename))
+                resume_path = os.path.join('static/uploads', resume_file.filename)
+                resume_file.save(resume_path)
 
         # ID Proof Upload
-        id_proof = user_profile['id_proof']
+        id_proof = user_profile.get('id_proof', '')
         if 'id_proof' in request.files:
             id_proof_file = request.files['id_proof']
             if id_proof_file.filename:
                 id_proof = f"uploads/{id_proof_file.filename}"
-                id_proof_file.save(os.path.join('static/uploads', id_proof_file.filename))
+                id_proof_path = os.path.join('static/uploads', id_proof_file.filename)
+                id_proof_file.save(id_proof_path)
 
-       
-        if conn.execute("SELECT * FROM user_profile WHERE username = ?", (username,)).fetchone():
+        # Update or Insert
+        if user_profile_row:
             conn.execute("""UPDATE user_profile SET 
                 full_name=?, email=?, phone=?, bio=?, skills=?, work_experience=?, education=?, job_status=?, company=?, designation=?, 
                 linkedin=?, github=?, portfolio=?, profile_photo=?, resume=?, id_proof=?, language=?, notification_preferences=? 
@@ -529,7 +588,6 @@ def update_profile():
                 (full_name, email, phone, bio, skills, work_experience, education, job_status, company, designation, 
                  linkedin, github, portfolio, profile_photo, resume, id_proof, language, notification_preferences, username))
         else:
-           
             conn.execute("""INSERT INTO user_profile 
                 (username, full_name, email, phone, bio, skills, work_experience, education, job_status, company, designation, 
                 linkedin, github, portfolio, profile_photo, resume, id_proof, language, notification_preferences) 
@@ -542,6 +600,23 @@ def update_profile():
         flash("Profile updated successfully!", "success")
         return redirect(url_for('account'))
 
+    conn.close()
     return render_template('profile.html', user_profile=user_profile)
+@app.route('/dummy', methods=['GET', 'POST'])
+def dummy():
+    if 'username' not in session:
+        return redirect(url_for('login'))  # 'redirect' spelling thik kiya
+
+    username = session['username']  # sahi syntax se session se data nikala
+
+    conn = get_db_connection()
+    user_profile = conn.execute(
+        "SELECT * FROM user_profile WHERE username = ?", (username,)
+    ).fetchone()
+
+    conn.close()
+
+    return render_template('h.html', user_profile=user_profile)
+
 if __name__ == '__main__':
     app.run(debug=True)

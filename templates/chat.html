@@ -3,23 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat - Local Job Finder</title>
+    <title>Chat - Rojgar Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
     <script>
         function searchUsers() {
             let query = document.getElementById("searchInput").value;
             fetch(`/chat/search_users?q=${query}`)
-            .then(response => response.json())
-            .then(users => {
-                let searchResults = document.getElementById("searchResults");
-                searchResults.innerHTML = "";
-                users.forEach(user => {
-                    let userDiv = document.createElement("div");
-                    userDiv.className = "search-result";
-                    userDiv.innerHTML = `<a href="/chat/${user}">${user}</a>`;
-                    searchResults.appendChild(userDiv);
+                .then(response => response.json())
+                .then(users => {
+                    let searchResults = document.getElementById("searchResults");
+                    searchResults.innerHTML = "";
+                    users.forEach(user => {
+                        let userDiv = document.createElement("div");
+                        userDiv.className = "search-result";
+                        userDiv.innerHTML = `
+    <img src="/static/${user.photo}" alt="User Photo" class="result-photo">
+    <div class="user-info">
+        <p class="username">${user.full_name}</p>
+        <small>@${user.username}</small>
+    </div>
+    <a class="chat-btn" href="/chat/${user.username}">Chat</a>
+`;
+                        searchResults.appendChild(userDiv);
+                    });
                 });
-            });
         }
 
         function sendMessage() {
@@ -38,17 +45,17 @@
 
         function loadMessages() {
             fetch(`/chat/get_messages/{{ receiver }}`)
-            .then(response => response.json())
-            .then(data => {
-                let chatBox = document.getElementById("chatBox");
-                chatBox.innerHTML = "";
-                data.messages.forEach(msg => {
-                    let messageDiv = document.createElement("div");
-                    messageDiv.className = msg.sender === "{{ user }}" ? "sent" : "received";
-                    messageDiv.innerHTML = `<p><strong>${msg.sender}:</strong> ${msg.message}</p>`;
-                    chatBox.appendChild(messageDiv);
+                .then(response => response.json())
+                .then(data => {
+                    let chatBox = document.getElementById("chatBox");
+                    chatBox.innerHTML = "";
+                    data.messages.forEach(msg => {
+                        let messageDiv = document.createElement("div");
+                        messageDiv.className = msg.sender === "{{ user }}" ? "sent" : "received";
+                        messageDiv.innerHTML = `<p><strong>${msg.sender}:</strong> ${msg.message}</p>`;
+                        chatBox.appendChild(messageDiv);
+                    });
                 });
-            });
         }
 
         setInterval(loadMessages, 2000);
@@ -56,19 +63,37 @@
 </head>
 <body>
 
-    <header>
-        <h1>Welcome, {{ user }}</h1>
-        <input type="text" id="searchInput" placeholder="Search user..." onkeyup="searchUsers()">
-        <div id="searchResults"></div>
-        <a href="/user_logout">Logout</a>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-left">
+            <h1>Rojgar Chat</h1>
+        </div>
+        <div class="header-right">
+            {% if user_profile %}
+                <div class="user-profile-header">
+                    <img src="{{ url_for('static', filename=user_profile.profile_photo or 'uploads/default.png') }}" class="user-photo" alt="Profile Photo">
+                    <p class="user-name">{{ user_profile.full_name }}</p>
+                </div>
+            {% endif %}
+            <a href="/user_logout" class="logout-button">Logout</a>
+        </div>
     </header>
 
+    <!-- Search -->
+    <div class="search-section">
+        <input type="text" id="searchInput" placeholder="Search user..." onkeyup="searchUsers()" class="search-bar">
+        <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <!-- Chat Box -->
     {% if receiver %}
-    <h2>Chat with {{ receiver }}</h2>
+    <h2 class="chat-title">Chat with {{ receiver }}</h2>
     <div class="chat-container">
-        <div id="chatBox"></div>
-        <input type="text" id="messageInput" placeholder="Type your message...">
-        <button onclick="sendMessage()">Send</button>
+        <div id="chatBox" class="chat-box"></div>
+        <div class="message-area">
+            <input type="text" id="messageInput" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
     </div>
     {% endif %}
 

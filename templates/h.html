@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+</head>
+<body>
+    {% if user_profile %}
+        <h2>Welcome, {{ user_profile.username }}</h2>
+
+        {% if user_profile.profile_photo %}
+            <img src="{{ url_for('static', filename=user_profile.profile_photo) }}" 
+                 alt="Profile Photo" 
+                 width="150" height="150" style="border-radius: 50%;">
+        {% else %}
+            <p>No profile photo available.</p>
+        {% endif %}
+
+        <p><strong>Name:</strong> {{ user_profile.full_name }}</p>
+        <p><strong>Email:</strong> {{ user_profile.email }}</p>
+        <p><strong>Phone:</strong> {{ user_profile.phone }}</p>
+    {% else %}
+        <p>User profile not found.</p>
+    {% endif %}
+</body>
+</html>

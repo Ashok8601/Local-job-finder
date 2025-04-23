@@ -5,6 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Local Job Finder - Find Work Easily</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <style>
+/* Search box styling */
+#search-box {
+    width: 60%;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    margin: 20px auto;
+    display: block;
+    position: relative;
+    z-index: 2;
+}
+
+/* Result container styled like dropdown */
+#search-results {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+/* Individual result item */
+.result-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-item:hover {
+    background-color: #f2f2f2;
+}
+
+/* Profile pic */
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+}
+
+/* Button */
+.btn {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 13px;
+    margin-left: auto;
+}
+.btn:hover {
+    background-color: #0056b3;
+}
+</style>
 </head>
 <body>
 
@@ -19,10 +89,11 @@
         </nav>
     </header>
     <br>
-     <form action="{{ url_for('search') }}" method="get">
-    <input type="text" name="q" placeholder="Search for jobs or users..." required>
-    <button type="submit">Search</button>
-</form>
+ <div style="position: relative;">
+    <input type="text" id="search-box" placeholder="Search for jobs or users...">
+    <div id="search-results"></div>
+</div>
+
     <!-- Hero Section -->
     <section class="hero">
     <h2 class="typing-animation">
@@ -58,5 +129,51 @@
         <a href="/instagram">Watch</a>
     </div>
 </footer>
+
+<script>
+document.getElementById('search-box').addEventListener('input', function () {
+    const query = this.value;
+
+    if (query.length < 2) {
+        document.getElementById('search-results').innerHTML = '';
+        document.getElementById('search-results').classList.remove('active');
+        return;
+    }
+
+    fetch(`/searches?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            let resultHTML = '';
+            data.results.forEach(item => {
+                if (item.username) {
+                    // User result
+                    resultHTML += `
+                        <div class="result-item">
+                           <img src="/static/${item.profile_photo || 'uploads/default-user.png'}" class="profile-pic">
+                            <div class="result-content">
+                                <strong>${item.username}</strong><br>
+                                <a href="/user/${item.username}" class="btn">View Profile</a>
+                            </div>
+                        </div>`;
+                } else {
+                    // Job result with See Details button
+                    resultHTML += `
+                        <div class="result-item">
+                            <div class="result-content">
+                                <strong>${item.title}</strong><br>
+                                Salary: ${item.salary || 'N/A'}<br>
+                                Type: ${item.job_type || 'N/A'}
+                            </div>
+                            <a href="/job/${item.id}" class="btn">See Details</a>
+                        </div>`;
+                }
+            });
+
+            const resultsDiv = document.getElementById('search-results');
+            resultsDiv.innerHTML = resultHTML;
+            resultsDiv.classList.toggle('active', data.results.length > 0);
+        });
+});
+</script>
 </body>
 </html>
