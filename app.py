@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify, Response 
 #from flask_mail import Mail, Message 
 from datetime import timedelta
 from flask_session import Session
@@ -617,6 +617,15 @@ def dummy():
     conn.close()
 
     return render_template('h.html', user_profile=user_profile)
+
+@app.route('/robots.txt')
+def robots_txt():
+    content = """User-agent: *
+Allow: /
+Sitemap: https://your-domain.com/sitemap.xml
+"""
+    return Response(content, mimetype='text/plain')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
